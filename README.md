@@ -32,3 +32,4 @@ The SQL files in `db/init/` only run when the database volume is first created. 
 5. [ ] Material pages, download, search
 6. [ ] Reports, votes, moderation queue
 7. [ ] i18n (EN/FR), accessibility pass, deployment
+# NorthShelf
