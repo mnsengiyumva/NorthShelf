@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import catalog, health
+from .routers import catalog, health, materials
 
 app = FastAPI(title=settings.app_name)
 
@@ -16,3 +16,9 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(catalog.router)
+app.include_router(materials.router)
+
+
+@app.get("/")
+def root():
+    return {"name": settings.app_name, "docs": "/docs"}

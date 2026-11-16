@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
@@ -29,6 +29,14 @@ def list_regions(conn: Conn, type: str | None = None, parent_code: str | None = 
 def list_levels(conn: Conn):
     rows = conn.execute(text(
         "SELECT id, slug, name_en, name_fr FROM education_levels ORDER BY sort_order"
+    ))
+    return [dict(r) for r in rows.mappings()]
+
+
+@router.get("/subjects")
+def list_subjects(conn: Conn):
+    rows = conn.execute(text(
+        "SELECT id, slug, name_en, name_fr FROM subjects ORDER BY name_en"
     ))
     return [dict(r) for r in rows.mappings()]
 
@@ -81,3 +89,22 @@ def list_courses(
     }
     rows = conn.execute(text(sql), params)
     return [dict(r) for r in rows.mappings()]
+
+
+@router.get("/courses/{course_id}")
+def get_course(course_id: int, conn: Conn):
+    sql = """
+        SELECT c.id, c.code, c.title, c.grade, c.language,
+               l.slug AS level, r.code AS region_code,
+               i.name AS institution, s.slug AS subject
+        FROM courses c
+        JOIN education_levels l ON l.id = c.level_id
+        JOIN regions r ON r.id = c.region_id
+        LEFT JOIN institutions i ON i.id = c.institution_id
+        LEFT JOIN subjects s ON s.id = c.subject_id
+        WHERE c.id = :course_id AND c.status = 'approved'
+    """
+    row = conn.execute(text(sql), {"course_id": course_id}).mappings().first()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Course not found")
+    return dict(row)
