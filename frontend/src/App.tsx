@@ -1,6 +1,39 @@
 import { Link, Route, Routes } from 'react-router-dom'
+import { useAuth } from './auth'
 import Browse from './pages/Browse'
 import CoursePage from './pages/CoursePage'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+
+function HeaderNav() {
+  const { user, isLoading, logout } = useAuth()
+  if (isLoading) return null
+
+  if (user) {
+    return (
+      <div className="flex items-center gap-4 text-sm">
+        <span className="text-slate-600">{user.display_name}</span>
+        <button onClick={() => void logout()} className="text-red-700 hover:underline">
+          Log out
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-4 text-sm">
+      <Link to="/login" className="text-slate-700 hover:underline">
+        Log in
+      </Link>
+      <Link
+        to="/signup"
+        className="rounded-md bg-red-700 px-3 py-1.5 font-medium text-white hover:bg-red-800"
+      >
+        Sign up
+      </Link>
+    </div>
+  )
+}
 
 export default function App() {
   return (
@@ -10,9 +43,7 @@ export default function App() {
           <Link to="/" className="text-xl font-bold tracking-tight text-red-700">
             NorthShelf
           </Link>
-          <p className="hidden text-sm text-slate-500 sm:block">
-            Northshelf offers Free course materials, shared by Canadian students
-          </p>
+          <HeaderNav />
         </div>
       </header>
 
@@ -20,6 +51,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Browse />} />
           <Route path="/courses/:courseId" element={<CoursePage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="*" element={<p>Page not found.</p>} />
         </Routes>
       </main>

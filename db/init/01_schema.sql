@@ -90,6 +90,7 @@ CREATE TABLE licenses (
 CREATE TABLE users (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email         TEXT NOT NULL UNIQUE,
+    password_hash TEXT,                       -- argon2 hash; NULL for accounts without a password
     display_name  TEXT NOT NULL,              -- avoid real names: many users are minors
     role          TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('member', 'moderator', 'admin')),
     created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
