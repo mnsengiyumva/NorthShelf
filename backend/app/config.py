@@ -19,5 +19,13 @@ class Settings(BaseSettings):
     s3_region: str = "auto"
     max_upload_mb: int = 25
 
+    # Per-user upload limits (moderators and admins are exempt)
+    max_pending_per_user: int = 10       # uploads waiting for review at once
+    max_uploads_per_day: int = 15        # in any 24 hours (counts deleted/rejected ones too)
+    max_user_storage_mb: int = 500       # total size of a user's non-removed uploads
+
+    # Rate limiting (in-memory; fine for a single server process)
+    rate_limit_enabled: bool = True
+
 
 settings = Settings()

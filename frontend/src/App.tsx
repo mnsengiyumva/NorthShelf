@@ -2,10 +2,12 @@ import { Link, Route, Routes } from 'react-router-dom'
 import { useAuth } from './auth'
 import Browse from './pages/Browse'
 import CoursePage from './pages/CoursePage'
+import About from './pages/About'
 import Admin from './pages/Admin'
 import Login from './pages/Login'
 import MyUploads from './pages/MyUploads'
 import Signup from './pages/Signup'
+import Support from './pages/Support'
 import Upload from './pages/Upload'
 
 function HeaderNav() {
@@ -74,11 +76,27 @@ export default function App() {
           <Route path="/upload" element={<Upload />} />
           <Route path="/my-uploads" element={<MyUploads />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/about" element={<About />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="*" element={<p>Page not found.</p>} />
         </Routes>
       </main>
+
+      <footer className="border-t border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-sm text-slate-500">
+          <span>© NorthShelf</span>
+          <nav className="flex gap-4">
+            <Link to="/about" className="hover:underline">
+              About &amp; policies
+            </Link>
+            <Link to="/support" className="font-medium text-red-700 hover:underline">
+              Support NorthShelf
+            </Link>
+          </nav>
+        </div>
+      </footer>
     </div>
   )
 }

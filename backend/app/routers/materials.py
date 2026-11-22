@@ -12,6 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from .. import storage
 from ..config import settings
 from ..db import get_conn
+from ..ratelimit import limiter
 from ..security import get_current_user, get_current_user_optional
 
 log = logging.getLogger(__name__)
@@ -103,6 +104,35 @@ def upload_material(
             detail="You must confirm that this is your own work or that you have permission to share it",
         )
 
+    # --- per-user limits (moderators and admins are exempt) ---
+    is_staff = user["role"] in ("moderator", "admin")
+    usage = None
+    if not is_staff:
+        limiter.hit(f"upload:{user['id']}", limit=10, window=3600,
+                    detail="You're uploading too quickly. Please wait a little and try again.")
+        usage = conn.execute(
+            text(
+                """
+                SELECT count(*) FILTER (WHERE status IN ('pending', 'flagged')) AS pending,
+                       count(*) FILTER (WHERE created_at > now() - interval '24 hours') AS last_day,
+                       COALESCE(sum(file_size) FILTER (WHERE status <> 'removed'), 0) AS stored_bytes
+                FROM materials WHERE uploader_id = :uid
+                """
+            ),
+            {"uid": str(user["id"])},
+        ).mappings().one()
+        if usage["pending"] >= settings.max_pending_per_user:
+            raise HTTPException(
+                status_code=429,
+                detail=f"You already have {usage['pending']} uploads waiting for review. "
+                       "Please wait until some are approved before uploading more.",
+            )
+        if usage["last_day"] >= settings.max_uploads_per_day:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Daily upload limit reached ({settings.max_uploads_per_day} per 24 hours). Please try again tomorrow.",
+            )
+
     # --- read and validate the file ---
     max_bytes = settings.max_upload_mb * 1024 * 1024
     data = file.file.read(max_bytes + 1)
@@ -117,9 +147,18 @@ def upload_material(
         raise HTTPException(status_code=415, detail="Only PDF, PNG and JPEG files are accepted")
     ext, mime = detected
 
+    if usage is not None and (
+        usage["stored_bytes"] + len(data) > settings.max_user_storage_mb * 1024 * 1024
+    ):
+        raise HTTPException(
+            status_code=429,
+            detail=f"This would go over your storage allowance of {settings.max_user_storage_mb} MB. "
+                   "Delete older uploads you no longer need, then try again.",
+        )
+
     # --- look up the related records ---
     course = conn.execute(
-        text("SELECT id FROM courses WHERE id = :id AND status = 'approved'"), {"id": course_id}
+        text("SELECT id FROM courses WHERE id = :id AND status IN ('approved', 'pending')"), {"id": course_id}
     ).first()
     if course is None:
         raise HTTPException(status_code=400, detail="Unknown course")
@@ -216,6 +255,9 @@ def download_material(
     if row is None:
         raise HTTPException(status_code=404, detail="Material not found")
 
+    if row["status"] == "removed":
+        raise HTTPException(status_code=404, detail="Material not found")
+
     if row["status"] == "published":
         conn.execute(
             text("UPDATE materials SET download_count = download_count + 1 WHERE id = :id"),
@@ -245,3 +287,21 @@ def my_materials(user: Annotated[dict, Depends(get_current_user)], conn: Conn):
     sql = MATERIAL_SELECT + " WHERE m.uploader_id = :uid ORDER BY m.created_at DESC"
     rows = conn.execute(text(sql), {"uid": str(user["id"])})
     return [dict(r) for r in rows.mappings()]
+
+
+@router.delete("/my/materials/{material_id}", status_code=204)
+def delete_my_material(
+    material_id: uuid.UUID, user: Annotated[dict, Depends(get_current_user)], conn: Conn
+):
+    """Lets an uploader remove their own material; the stored file is deleted too."""
+    row = conn.execute(
+        text(
+            "UPDATE materials SET status = 'removed' "
+            "WHERE id = :id AND uploader_id = :uid AND status <> 'removed' RETURNING file_key"
+        ),
+        {"id": str(material_id), "uid": str(user["id"])},
+    ).mappings().first()
+    conn.commit()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Material not found")
+    _safe_delete(row["file_key"])

@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth'
@@ -13,7 +13,12 @@ const STATUS: Record<string, { label: string; className: string }> = {
 
 export default function MyUploads() {
   const { user, isLoading } = useAuth()
+  const queryClient = useQueryClient()
   const mine = useQuery({ queryKey: ['my-materials'], queryFn: api.myMaterials, enabled: !!user })
+  const remove = useMutation({
+    mutationFn: (id: string) => api.deleteMyMaterial(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-materials'] }),
+  })
 
   if (isLoading) return null
   if (!user) {
@@ -42,8 +47,10 @@ export default function MyUploads() {
         <p className="mt-4 text-slate-500">You haven&apos;t uploaded anything yet.</p>
       )}
 
+      {remove.isError && <p className="mt-4 text-red-700">Could not delete that upload. Please try again.</p>}
+
       <ul className="mt-4 space-y-3">
-        {mine.data?.map((m) => {
+        {mine.data?.filter((m) => m.status !== 'removed').map((m) => {
           const status = STATUS[m.status] ?? { label: m.status, className: 'bg-slate-200' }
           return (
             <li key={m.id} className="rounded-lg border border-slate-200 bg-white p-4">
@@ -59,12 +66,22 @@ export default function MyUploads() {
                   {status.label}
                 </span>
               </div>
-              <a
-                href={`/api/materials/${m.id}/download`}
-                className="mt-2 inline-block text-sm text-red-700 hover:underline"
-              >
-                Download
-              </a>
+              <div className="mt-2 flex gap-4 text-sm">
+                <a href={`/api/materials/${m.id}/download`} className="text-red-700 hover:underline">
+                  Download
+                </a>
+                <button
+                  disabled={remove.isPending}
+                  onClick={() => {
+                    if (window.confirm('Delete this upload? The file will be permanently removed.')) {
+                      remove.mutate(m.id)
+                    }
+                  }}
+                  className="text-slate-600 hover:text-red-700 hover:underline disabled:opacity-60"
+                >
+                  Delete
+                </button>
+              </div>
             </li>
           )
         })}

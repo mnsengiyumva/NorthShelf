@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api, type Course } from '../api'
+import AddCourse from './AddCourse'
 import { useAuth } from '../auth'
 import { inputClass } from './Login'
 
@@ -26,6 +27,8 @@ export default function Upload() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
+  const [adding, setAdding] = useState(false)
+  const [newCourseNote, setNewCourseNote] = useState(false)
 
   const preset = useQuery({
     queryKey: ['course', presetId],
@@ -132,6 +135,7 @@ export default function Upload() {
                 className="text-red-700 hover:underline"
                 onClick={() => {
                   setPicked(null)
+                  setNewCourseNote(false)
                   setCourseQuery('')
                 }}
               >
@@ -167,7 +171,32 @@ export default function Upload() {
                   </li>
                 ))}
               </ul>
+              {!adding && (
+                <button
+                  type="button"
+                  onClick={() => setAdding(true)}
+                  className="mt-3 text-sm text-red-700 hover:underline"
+                >
+                  Can&apos;t find your course? Add it
+                </button>
+              )}
+              {adding && (
+                <AddCourse
+                  initialCode={courseQuery.trim().length >= 2 ? courseQuery.trim() : ''}
+                  onCancel={() => setAdding(false)}
+                  onCreated={(created) => {
+                    setPicked(created)
+                    setNewCourseNote(created.status === 'pending')
+                    setAdding(false)
+                  }}
+                />
+              )}
             </>
+          )}
+          {course && newCourseNote && (
+            <p className="mt-2 text-xs text-slate-500">
+              This is a new course. It will appear for everyone once your upload is approved.
+            </p>
           )}
         </div>
 

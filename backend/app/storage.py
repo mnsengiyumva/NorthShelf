@@ -36,10 +36,11 @@ def _client():
         config=Config(
             signature_version="s3v4",
             s3={"addressing_style": "path"},
+            # Newer boto3 adds extra checksum headers that some S3-compatible
+            # services (R2, Backblaze B2) reject. Only send them when required.
             request_checksum_calculation="when_required",
             response_checksum_validation="when_required",
         ),
-        
     )
 
 
@@ -69,3 +70,11 @@ def presigned_download_url(key: str, filename: str, content_type: str, expires: 
         },
         ExpiresIn=expires,
     )
+
+
+def iter_objects(prefix: str):
+    """Yield (key, last_modified) for every stored object under a prefix."""
+    paginator = _client().get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=settings.s3_bucket, Prefix=prefix):
+        for obj in page.get("Contents", []):
+            yield obj["Key"], obj["LastModified"]

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from ..config import settings
 from ..db import get_conn
+from ..ratelimit import client_ip, limiter
 from ..security import (
     create_access_token,
     get_current_user,
@@ -45,7 +46,10 @@ def _set_session_cookie(response: Response, user_id: str) -> None:
 
 
 @router.post("/signup", status_code=201)
-def signup(body: SignupIn, response: Response, conn: Conn):
+def signup(body: SignupIn, request: Request, response: Response, conn: Conn):
+    # Generous per-IP limit: a whole class may sign up from one school network.
+    limiter.hit(f"signup:{client_ip(request)}", limit=20, window=3600,
+                detail="Too many accounts created from this network. Please try again later.")
     try:
         row = conn.execute(
             text(
@@ -72,16 +76,22 @@ def signup(body: SignupIn, response: Response, conn: Conn):
 
 
 @router.post("/login")
-def login(body: LoginIn, response: Response, conn: Conn):
+def login(body: LoginIn, request: Request, response: Response, conn: Conn):
+    email = body.email.lower()
+    limiter.hit(f"login-ip:{client_ip(request)}", limit=60, window=900)
+    # Brute-force protection: only FAILED attempts count against an email address.
+    limiter.check(f"login-fail:{email}", limit=5, window=900,
+                  detail="Too many failed attempts. Please wait a few minutes and try again.")
     row = conn.execute(
         text(
             "SELECT id, email, display_name, role, password_hash FROM users WHERE email = :email"
         ),
-        {"email": body.email.lower()},
+        {"email": email},
     ).mappings().first()
 
     ok = verify_password(body.password, row["password_hash"] if row else None)
     if not row or not ok:
+        limiter.add(f"login-fail:{email}")
         raise HTTPException(status_code=401, detail="Incorrect email or password")
 
     user = {k: row[k] for k in ("id", "email", "display_name", "role")}

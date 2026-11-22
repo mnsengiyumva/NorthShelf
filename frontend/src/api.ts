@@ -26,6 +26,27 @@ export type Course = {
   subject: string | null
 }
 
+export type Institution = {
+  id: number
+  name: string
+  level: string
+  region_code: string
+}
+
+export type CourseDraft = {
+  level: string
+  region: string
+  code: string
+  title: string
+  subject?: string
+  grade?: number
+  language: string
+  institution_id?: number
+  new_institution_name?: string
+}
+
+export type CreatedCourse = Course & { status: string; existing: boolean }
+
 export type Material = {
   id: string
   title: string
@@ -49,6 +70,17 @@ export type Material = {
 export type AdminMaterial = Material & {
   license: string
   own_work_confirmed: boolean
+  course_status: string
+  level: string
+  region_code: string
+  institution: string | null
+}
+
+export type Stats = {
+  stored_bytes: number
+  uploads_last_24h: number
+  by_status: Record<string, number>
+  top_uploaders: { display_name: string; uploads: number; bytes: number }[]
 }
 
 export type License = {
@@ -109,10 +141,14 @@ export const api = {
   courses: (params: Params) => get<Course[]>('/api/courses', params),
   course: (id: number) => get<Course>(`/api/courses/${id}`),
   materials: (params: Params) => get<Material[]>('/api/materials', params),
+  institutions: (params: Params) => get<Institution[]>('/api/institutions', params),
+  createCourse: (draft: CourseDraft) => send<CreatedCourse>('POST', '/api/courses', draft),
   licenses: () => get<License[]>('/api/licenses'),
   uploadMaterial: (form: FormData) =>
     send<{ id: string; status: string }>('POST', '/api/materials', form),
   myMaterials: () => get<Material[]>('/api/my/materials'),
+  deleteMyMaterial: (id: string) => send<void>('DELETE', `/api/my/materials/${id}`),
+  stats: () => get<Stats>('/api/admin/stats'),
   reviewQueue: () => get<AdminMaterial[]>('/api/admin/materials', { status: 'pending' }),
   approve: (id: string) => send<{ id: string; status: string }>('POST', `/api/admin/materials/${id}/approve`),
   reject: (id: string) => send<{ id: string; status: string }>('POST', `/api/admin/materials/${id}/reject`),

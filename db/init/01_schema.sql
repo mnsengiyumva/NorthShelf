@@ -31,6 +31,7 @@ CREATE TABLE institutions (
     level_id    INT NOT NULL REFERENCES education_levels(id),
     name        TEXT NOT NULL,
     website     TEXT,
+    status      TEXT NOT NULL DEFAULT 'approved' CHECK (status IN ('approved', 'pending')),
     UNIQUE (region_id, level_id, name)
 );
 
@@ -58,6 +59,7 @@ CREATE TABLE courses (
     language            TEXT NOT NULL DEFAULT 'en' CHECK (language IN ('en', 'fr')),
     status              TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'merged')),
     merged_into_id      INT REFERENCES courses(id),     -- dedupe variants like 'CS1010' vs 'CS 1010'
+    created_by          UUID,                           -- who proposed it (NULL for seeded courses)
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

@@ -9,11 +9,15 @@ export default function Admin() {
   const isMod = user?.role === 'moderator' || user?.role === 'admin'
 
   const queue = useQuery({ queryKey: ['review-queue'], queryFn: api.reviewQueue, enabled: isMod })
+  const stats = useQuery({ queryKey: ['admin-stats'], queryFn: api.stats, enabled: isMod })
 
   const decide = useMutation({
     mutationFn: ({ id, action }: { id: string; action: 'approve' | 'reject' }) =>
       action === 'approve' ? api.approve(id) : api.reject(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['review-queue'] }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['review-queue'] })
+      void queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
+    },
   })
 
   if (isLoading) return null
@@ -25,6 +29,27 @@ export default function Admin() {
       <p className="mt-1 text-sm text-slate-600">
         Open each file, check it is on topic, free of personal information and fine to share, then approve or reject it.
       </p>
+
+      {stats.data && (
+        <div className="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 text-sm sm:grid-cols-4">
+          <div>
+            <p className="text-xs text-slate-500">Storage used</p>
+            <p className="font-semibold">{formatBytes(stats.data.stored_bytes)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500">Uploads, last 24 h</p>
+            <p className="font-semibold">{stats.data.uploads_last_24h}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500">Published</p>
+            <p className="font-semibold">{stats.data.by_status.published ?? 0}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500">Waiting for review</p>
+            <p className="font-semibold">{stats.data.by_status.pending ?? 0}</p>
+          </div>
+        </div>
+      )}
 
       {queue.isLoading && <p className="mt-4 text-slate-500">Loading…</p>}
       {queue.data && queue.data.length === 0 && (
@@ -40,6 +65,15 @@ export default function Admin() {
               {m.course_code} · {m.type_name}
               {m.academic_year ? ` · ${m.academic_year}` : ''} · {formatBytes(m.file_size)} ·
               by {m.uploader}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              {m.level.replace('_', ' ')} · {m.region_code.replace('CA-', '')}
+              {m.institution ? ` · ${m.institution}` : ''}
+              {m.course_status === 'pending' && (
+                <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-800">
+                  New course: approving this adds it to the site
+                </span>
+              )}
             </p>
             <p className="mt-1 text-xs text-slate-500">
               License: {m.license} · Ownership confirmed: {m.own_work_confirmed ? 'yes' : 'no'}
@@ -66,7 +100,7 @@ export default function Admin() {
                 onClick={() => decide.mutate({ id: m.id, action: 'reject' })}
                 className="rounded-md bg-slate-600 px-3 py-1 font-medium text-white hover:bg-slate-700 disabled:opacity-60"
               >
-                Reject
+                Reject and delete file
               </button>
             </div>
           </li>
