@@ -11,5 +11,13 @@ class Settings(BaseSettings):
     cookie_name: str = "northshelf_session"
     cookie_secure: bool = False
 
+    # File storage: any S3-compatible service (Cloudflare R2 in dev and production).
+    s3_endpoint_url: str = ""        # e.g. https://<account-id>.r2.cloudflarestorage.com
+    s3_access_key_id: str = ""
+    s3_secret_access_key: str = ""
+    s3_bucket: str = ""
+    s3_region: str = "auto"
+    max_upload_mb: int = 25
+
 
 settings = Settings()

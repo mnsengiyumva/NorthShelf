@@ -6,3 +6,5 @@ pydantic-settings>=2.4
 pydantic[email]>=2.8
 argon2-cffi>=23.1
 pyjwt>=2.9
+boto3>=1.36
+python-multipart>=0.0.9

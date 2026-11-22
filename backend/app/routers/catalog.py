@@ -41,6 +41,12 @@ def list_subjects(conn: Conn):
     return [dict(r) for r in rows.mappings()]
 
 
+@router.get("/licenses")
+def list_licenses(conn: Conn):
+    rows = conn.execute(text("SELECT id, slug, name, url FROM licenses ORDER BY id"))
+    return [dict(r) for r in rows.mappings()]
+
+
 @router.get("/material-types")
 def list_material_types(conn: Conn):
     rows = conn.execute(text(

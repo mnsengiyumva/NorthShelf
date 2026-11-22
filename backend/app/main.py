@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import auth, catalog, health, materials
+from .routers import admin, auth, catalog, health, materials
 
 app = FastAPI(title=settings.app_name)
 
@@ -19,6 +19,7 @@ app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(catalog.router)
 app.include_router(materials.router)
+app.include_router(admin.router)
 
 
 @app.get("/")

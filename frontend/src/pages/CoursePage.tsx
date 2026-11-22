@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api'
+import { formatBytes } from '../format'
 
 export default function CoursePage() {
   const courseId = Number(useParams().courseId)
@@ -46,14 +47,21 @@ export default function CoursePage() {
         {c.institution ? ` · ${c.institution}` : ''}
       </p>
 
-      <h2 className="mt-8 text-lg font-semibold">Materials</h2>
+      <div className="mt-8 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Materials</h2>
+        <Link
+          to={`/upload?course=${c.id}`}
+          className="rounded-md bg-red-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-800"
+        >
+          Upload for this course
+        </Link>
+      </div>
 
       {materials.isLoading && <p className="mt-3 text-slate-500">Loading materials…</p>}
       {materials.isError && <p className="mt-3 text-red-700">Could not load materials.</p>}
       {materials.data && materials.data.length === 0 && (
         <p className="mt-3 text-slate-500">
-          Nothing here yet. Uploads are coming soon, and you&apos;ll be able to be the first to
-          share something for this course.
+          Nothing here yet. Be the first to share something for this course.
         </p>
       )}
 
@@ -64,8 +72,15 @@ export default function CoursePage() {
             <p className="mt-1 text-xs text-slate-500">
               {m.type_name}
               {m.academic_year ? ` · ${m.academic_year}` : ''}
-              {m.term ? ` · ${m.term}` : ''} · {m.language.toUpperCase()}
+              {m.term ? ` · ${m.term}` : ''} · {m.language.toUpperCase()} · {formatBytes(m.file_size)}
+              · shared by {m.uploader}
             </p>
+            <a
+              href={`/api/materials/${m.id}/download`}
+              className="mt-2 inline-block text-sm font-medium text-red-700 hover:underline"
+            >
+              Download
+            </a>
           </li>
         ))}
       </ul>

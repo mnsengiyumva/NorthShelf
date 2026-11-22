@@ -63,3 +63,9 @@ def get_current_user(
     if user is None:
         raise HTTPException(status_code=401, detail="Not logged in")
     return user
+
+
+def require_moderator(user: Annotated[dict, Depends(get_current_user)]) -> dict:
+    if user["role"] not in ("moderator", "admin"):
+        raise HTTPException(status_code=403, detail="Moderator access required")
+    return user

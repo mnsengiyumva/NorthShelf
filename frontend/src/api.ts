@@ -40,6 +40,22 @@ export type Material = {
   course_title: string
   type: string
   type_name: string
+  uploader: string
+  file_size: number
+  mime_type: string
+  status: string
+}
+
+export type AdminMaterial = Material & {
+  license: string
+  own_work_confirmed: boolean
+}
+
+export type License = {
+  id: number
+  slug: string
+  name: string
+  url: string | null
 }
 
 export type User = {
@@ -63,10 +79,12 @@ async function get<T>(path: string, params: Params = {}): Promise<T> {
 }
 
 async function send<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const isForm = body instanceof FormData
   const res = await fetch(path, {
     method,
-    headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    // For FormData the browser sets the multipart Content-Type (with its boundary) itself.
+    headers: body !== undefined && !isForm ? { 'Content-Type': 'application/json' } : undefined,
+    body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
   })
   if (!res.ok) {
     let message = `Request failed (${res.status})`
@@ -91,6 +109,13 @@ export const api = {
   courses: (params: Params) => get<Course[]>('/api/courses', params),
   course: (id: number) => get<Course>(`/api/courses/${id}`),
   materials: (params: Params) => get<Material[]>('/api/materials', params),
+  licenses: () => get<License[]>('/api/licenses'),
+  uploadMaterial: (form: FormData) =>
+    send<{ id: string; status: string }>('POST', '/api/materials', form),
+  myMaterials: () => get<Material[]>('/api/my/materials'),
+  reviewQueue: () => get<AdminMaterial[]>('/api/admin/materials', { status: 'pending' }),
+  approve: (id: string) => send<{ id: string; status: string }>('POST', `/api/admin/materials/${id}/approve`),
+  reject: (id: string) => send<{ id: string; status: string }>('POST', `/api/admin/materials/${id}/reject`),
 
   // --- auth (the session lives in an httpOnly cookie set by the backend) ---
   me: async (): Promise<User | null> => {
