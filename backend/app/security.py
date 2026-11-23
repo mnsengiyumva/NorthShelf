@@ -48,12 +48,20 @@ def get_current_user_optional(
         payload = jwt.decode(session, settings.jwt_secret, algorithms=["HS256"])
         user_id = payload["sub"]
         row = conn.execute(
-            text("SELECT id, email, display_name, role FROM users WHERE id = CAST(:id AS uuid)"),
+            text(
+                "SELECT id, email, display_name, role, password_changed_at "
+                "FROM users WHERE id = CAST(:id AS uuid)"
+            ),
             {"id": user_id},
         ).mappings().first()
     except Exception:
         return None
-    return dict(row) if row else None
+    if row is None:
+        return None
+    changed = row["password_changed_at"]
+    if changed is not None and payload.get("iat", 0) < int(changed.timestamp()):
+        return None  # this session started before the password was changed
+    return {k: row[k] for k in ("id", "email", "display_name", "role")}
 
 
 def get_current_user(

@@ -15,11 +15,11 @@ from . import storage
 from .db import engine
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--delete", action="store_true", help="really delete (default is a dry run)")
     parser.add_argument("--min-age-minutes", type=int, default=60)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     with engine.connect() as conn:
         live = {
@@ -43,6 +43,7 @@ def main() -> None:
                 "DELETE FROM institutions WHERE status = 'pending' "
                 "AND NOT EXISTS (SELECT 1 FROM courses c WHERE c.institution_id = institutions.id)"
             ))
+            conn.execute(text("DELETE FROM password_resets WHERE expires_at < now() - interval '1 day'"))
             conn.commit()
     print(f"{n_courses} stale pending courses {'deleted' if args.delete else 'found'} (older than 7 days, no uploads).")
     print(f"{len(live)} files in use; {len(doomed)} unused files found.")

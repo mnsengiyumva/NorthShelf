@@ -55,6 +55,11 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </label>
+        <p className="text-sm">
+          <Link to="/forgot-password" className="text-brand underline underline-offset-4">
+            Forgot your password?
+          </Link>
+        </p>
         {error && (
           <p role="alert" className="text-sm text-danger">
             {error}

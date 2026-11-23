@@ -7,10 +7,12 @@ import Admin from './pages/Admin'
 import Browse from './pages/Browse'
 import Contact from './pages/Contact'
 import CoursePage from './pages/CoursePage'
+import ForgotPassword from './pages/ForgotPassword'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import MyUploads from './pages/MyUploads'
 import NotFound from './pages/NotFound'
+import ResetPassword from './pages/ResetPassword'
 import Signup from './pages/Signup'
 import Support from './pages/Support'
 import Upload from './pages/Upload'
@@ -46,6 +48,8 @@ export default function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/support" element={<Support />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />

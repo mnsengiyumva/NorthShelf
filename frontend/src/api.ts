@@ -165,4 +165,8 @@ export const api = {
   signup: (email: string, password: string, display_name: string) =>
     send<User>('POST', '/api/auth/signup', { email, password, display_name }),
   logout: () => send<void>('POST', '/api/auth/logout'),
+  forgotPassword: (email: string) =>
+    send<{ detail: string }>('POST', '/api/auth/forgot-password', { email }),
+  resetPassword: (token: string, password: string) =>
+    send<{ detail: string }>('POST', '/api/auth/reset-password', { token, password }),
 }
