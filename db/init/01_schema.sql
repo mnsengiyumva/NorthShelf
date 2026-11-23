@@ -93,6 +93,7 @@ CREATE TABLE users (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email         TEXT NOT NULL UNIQUE,
     password_hash TEXT,                       -- argon2 hash; NULL for accounts without a password
+    password_changed_at TIMESTAMPTZ,          -- sessions issued before this are no longer valid
     display_name  TEXT NOT NULL,              -- avoid real names: many users are minors
     role          TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('member', 'moderator', 'admin')),
     created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -145,3 +146,14 @@ CREATE TABLE reports (
     status       TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'actioned', 'dismissed')),
     created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- One-time password reset links. Only a SHA-256 hash of the token is stored.
+CREATE TABLE password_resets (
+    id          SERIAL PRIMARY KEY,
+    user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash  TEXT NOT NULL UNIQUE,
+    expires_at  TIMESTAMPTZ NOT NULL,
+    used_at     TIMESTAMPTZ,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX password_resets_user_idx ON password_resets (user_id);
