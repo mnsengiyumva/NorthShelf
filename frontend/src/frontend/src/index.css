@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------- Design tokens ----------
+   Cool "lake and ice" neutrals, one deep-blue action color, and a muted
+   spine palette (teal / ochre / plum) that encodes the education level. */
+:root {
+  --paper: #f1f4f5;
+  --surface: #ffffff;
+  --ink: #13212c;
+  --soft: #3d4b57;
+  --muted: #5f6c77;
+  --line: #dde3e7;
+  --line-strong: #c3ccd3;
+  --brand: #1c4a73;
+  --brand-hover: #143757;
+  --brand-soft: #e3ecf4;
+  --on-brand: #ffffff;
+  --danger: #b42318;
+  --warn: #7a4e00;
+  --warn-soft: #fbefd0;
+  --ok: #1b6b3a;
+  --ok-soft: #dcf1e4;
+  --footer: #12314a;
+  --shelf: #13212c;
+  --lvl-high-school: #1f7a75;
+  --lvl-college: #94701a;
+  --lvl-university: #6a3f73;
+  color-scheme: light;
+}
+
+.dark {
+  --paper: #0f1a24;
+  --surface: #16242f;
+  --ink: #e8eef2;
+  --soft: #b9c5cf;
+  --muted: #8d9ca8;
+  --line: #233341;
+  --line-strong: #34495b;
+  --brand: #86b8e6;
+  --brand-hover: #a5cdf0;
+  --brand-soft: #172b3d;
+  --on-brand: #0c1822;
+  --danger: #ff8f80;
+  --warn: #f2c76b;
+  --warn-soft: #3a2d0f;
+  --ok: #7bdaa2;
+  --ok-soft: #12301f;
+  --footer: #0a121a;
+  --shelf: #3a5063;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-display: "Bitter Variable", Georgia, serif;
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-soft: var(--soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
+  --color-danger: var(--danger);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-footer: var(--footer);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+/* ---------- The shelf: course "spines" on the home page ---------- */
+.spine {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--w);
+  height: var(--h);
+  background: var(--c);
+  color: #fff;
+  border-radius: 3px 3px 0 0;
+  writing-mode: vertical-rl; /* reads top to bottom, like a North American book spine */
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  box-shadow: inset -3px 0 0 rgb(0 0 0 / 0.16), inset 2px 0 0 rgb(255 255 255 / 0.12);
+  transition: transform 0.18s ease;
+}
+.spine::before,
+.spine::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgb(255 255 255 / 0.4);
+}
+.spine::before {
+  top: 14px;
+}
+.spine::after {
+  bottom: 14px;
+}
+.spine:hover,
+.spine:focus-visible {
+  transform: translateY(-12px);
+}
+.spine-ghost {
+  --w: 46px;
+  --h: 150px;
+  background: transparent;
+  color: var(--muted);
+  border: 2px dashed var(--line-strong);
+  box-shadow: none;
+  font-weight: 600;
+}
+.spine-ghost::before,
+.spine-ghost::after {
+  display: none;
+}
+.spine-placeholder {
+  width: var(--w);
+  height: var(--h);
+  background: var(--line);
+  border-radius: 3px 3px 0 0;
+}
+.shelf-board {
+  height: 10px;
+  background: var(--shelf);
+  border-radius: 2px;
+}
+
+/* One orchestrated moment: the spines slide up onto the shelf once, on load. */
+@media (prefers-reduced-motion: no-preference) {
+  .spine {
+    animation: spine-rise 0.55s cubic-bezier(0.2, 0.7, 0.25, 1) backwards;
+    animation-delay: calc(var(--i, 0) * 40ms);
+  }
+  .spine-placeholder {
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+}
+@keyframes spine-rise {
+  from {
+    transform: translateY(60px);
+    opacity: 0;
+  }
+}

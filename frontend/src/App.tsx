@@ -1,102 +1,59 @@
-import { Link, Route, Routes } from 'react-router-dom'
-import { useAuth } from './auth'
-import Browse from './pages/Browse'
-import CoursePage from './pages/CoursePage'
+import { Outlet, Route, Routes } from 'react-router-dom'
+import Footer from './components/Footer'
+import Header from './components/Header'
+import ScrollToTop from './components/ScrollToTop'
 import About from './pages/About'
 import Admin from './pages/Admin'
+import Browse from './pages/Browse'
+import Contact from './pages/Contact'
+import CoursePage from './pages/CoursePage'
+import Home from './pages/Home'
 import Login from './pages/Login'
 import MyUploads from './pages/MyUploads'
+import NotFound from './pages/NotFound'
 import Signup from './pages/Signup'
 import Support from './pages/Support'
 import Upload from './pages/Upload'
 
-function HeaderNav() {
-  const { user, isLoading, logout } = useAuth()
-  if (isLoading) return null
-
-  const uploadLink = (
-    <Link to="/upload" className="font-medium text-red-700 hover:underline">
-      Upload
-    </Link>
-  )
-
-  if (user) {
-    const isMod = user.role === 'moderator' || user.role === 'admin'
-    return (
-      <div className="flex items-center gap-4 text-sm">
-        {uploadLink}
-        <Link to="/my-uploads" className="text-slate-700 hover:underline">
-          My uploads
-        </Link>
-        {isMod && (
-          <Link to="/admin" className="text-slate-700 hover:underline">
-            Review
-          </Link>
-        )}
-        <span className="text-slate-600">{user.display_name}</span>
-        <button onClick={() => void logout()} className="text-red-700 hover:underline">
-          Log out
-        </button>
-      </div>
-    )
-  }
-
+// Pages other than the home page share one centered content column.
+function Shell() {
   return (
-    <div className="flex items-center gap-4 text-sm">
-      {uploadLink}
-      <Link to="/login" className="text-slate-700 hover:underline">
-        Log in
-      </Link>
-      <Link
-        to="/signup"
-        className="rounded-md bg-red-700 px-3 py-1.5 font-medium text-white hover:bg-red-800"
-      >
-        Sign up
-      </Link>
+    <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-10">
+      <Outlet />
     </div>
   )
 }
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <Link to="/" className="text-xl font-bold tracking-tight text-red-700">
-            NorthShelf
-          </Link>
-          <HeaderNav />
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-5xl px-4 py-8">
+    <div className="flex min-h-screen flex-col">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-brand focus:px-4 focus:py-2 focus:text-on-brand"
+      >
+        Skip to content
+      </a>
+      <ScrollToTop />
+      <Header />
+      <main id="main" className="flex-1">
         <Routes>
-          <Route path="/" element={<Browse />} />
-          <Route path="/courses/:courseId" element={<CoursePage />} />
-          <Route path="/upload" element={<Upload />} />
-          <Route path="/my-uploads" element={<MyUploads />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="*" element={<p>Page not found.</p>} />
+          <Route path="/" element={<Home />} />
+          <Route element={<Shell />}>
+            <Route path="/browse" element={<Browse />} />
+            <Route path="/courses/:courseId" element={<CoursePage />} />
+            <Route path="/upload" element={<Upload />} />
+            <Route path="/my-uploads" element={<MyUploads />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Routes>
       </main>
-
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-sm text-slate-500">
-          <span>© NorthShelf</span>
-          <nav className="flex gap-4">
-            <Link to="/about" className="hover:underline">
-              About &amp; policies
-            </Link>
-            <Link to="/support" className="font-medium text-red-700 hover:underline">
-              Support NorthShelf
-            </Link>
-          </nav>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

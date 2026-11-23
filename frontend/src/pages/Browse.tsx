@@ -1,17 +1,26 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Link, useSearchParams } from 'react-router-dom'
-import { api } from '../api'
+import { api, type Course } from '../api'
+import { LEVELS, levelColor, levelLabel, provinceName } from '../lib/labels'
+import { btnSecondary, fieldClass, h1Class } from '../ui'
+import { usePageTitle } from '../usePageTitle'
 
-const selectClass =
-  'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-red-600 focus:outline-none'
+function meta(c: Course, provinces: Parameters<typeof provinceName>[1]) {
+  const parts = [provinceName(c.region_code, provinces), levelLabel(c.level)]
+  if (c.grade) parts.push(`Grade ${c.grade}`)
+  if (c.institution) parts.push(c.institution)
+  return parts.join(', ')
+}
 
 export default function Browse() {
+  usePageTitle('Browse courses')
   // Filters live in the URL, so a filtered view can be shared or bookmarked.
   const [params, setParams] = useSearchParams()
   const region = params.get('region') ?? ''
   const level = params.get('level') ?? ''
   const subject = params.get('subject') ?? ''
   const q = params.get('q') ?? ''
+  const hasFilters = !!(region || level || subject || q)
 
   function setFilter(key: string, value: string) {
     const next = new URLSearchParams(params)
@@ -21,7 +30,6 @@ export default function Browse() {
   }
 
   const regions = useQuery({ queryKey: ['regions'], queryFn: api.regions })
-  const levels = useQuery({ queryKey: ['levels'], queryFn: api.levels })
   const subjects = useQuery({ queryKey: ['subjects'], queryFn: api.subjects })
 
   const courses = useQuery({
@@ -30,24 +38,18 @@ export default function Browse() {
     placeholderData: keepPreviousData,
   })
 
-  const provinces = (regions.data ?? []).filter(
-    (r) => r.type === 'province' || r.type === 'territory',
-  )
+  const provinces = (regions.data ?? []).filter((r) => r.type === 'province' || r.type === 'territory')
+  const list = courses.data
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold">Find your course</h1>
-      <p className="mt-1 text-slate-600">
-        Filter by province, level and subject to find notes, past exams and study guides.
+      <h1 className={h1Class}>Browse courses</h1>
+      <p className="mt-2 max-w-xl text-soft">
+        Choose a province, level or subject, or search for a course code.
       </p>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <select
-          aria-label="Province or territory"
-          className={selectClass}
-          value={region}
-          onChange={(e) => setFilter('region', e.target.value)}
-        >
+      <div className="mt-6 grid gap-3 rounded-lg border border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <select aria-label="Province or territory" className={fieldClass + ' mt-0'} value={region} onChange={(e) => setFilter('region', e.target.value)}>
           <option value="">All provinces and territories</option>
           {provinces.map((r) => (
             <option key={r.code} value={r.code}>
@@ -55,27 +57,15 @@ export default function Browse() {
             </option>
           ))}
         </select>
-
-        <select
-          aria-label="Level"
-          className={selectClass}
-          value={level}
-          onChange={(e) => setFilter('level', e.target.value)}
-        >
+        <select aria-label="Level" className={fieldClass + ' mt-0'} value={level} onChange={(e) => setFilter('level', e.target.value)}>
           <option value="">All levels</option>
-          {(levels.data ?? []).map((l) => (
-            <option key={l.slug} value={l.slug}>
-              {l.name_en}
+          {LEVELS.map((l) => (
+            <option key={l} value={l}>
+              {levelLabel(l)}
             </option>
           ))}
         </select>
-
-        <select
-          aria-label="Subject"
-          className={selectClass}
-          value={subject}
-          onChange={(e) => setFilter('subject', e.target.value)}
-        >
+        <select aria-label="Subject" className={fieldClass + ' mt-0'} value={subject} onChange={(e) => setFilter('subject', e.target.value)}>
           <option value="">All subjects</option>
           {(subjects.data ?? []).map((s) => (
             <option key={s.slug} value={s.slug}>
@@ -83,40 +73,56 @@ export default function Browse() {
             </option>
           ))}
         </select>
-
-        <input
-          type="search"
-          aria-label="Search courses"
-          placeholder="Search by code or title"
-          className={selectClass}
-          value={q}
-          onChange={(e) => setFilter('q', e.target.value)}
-        />
+        <input type="search" aria-label="Search courses" placeholder="Search by code or title" className={fieldClass + ' mt-0'} value={q} onChange={(e) => setFilter('q', e.target.value)} />
       </div>
 
-      <section className="mt-8" aria-live="polite">
-        {courses.isLoading && <p className="text-slate-500">Loading courses…</p>}
-        {courses.isError && (
-          <p className="text-red-700">Could not load courses. Is the API running?</p>
+      <div className="mt-4 flex min-h-[2.25rem] items-center justify-between text-sm text-muted" aria-live="polite">
+        <p>
+          {list && `${list.length}${list.length === 50 ? '+' : ''} ${list.length === 1 ? 'course' : 'courses'}`}
+          {list && list.length === 50 && ' (showing the first 50, narrow the filters to see more)'}
+        </p>
+        {hasFilters && (
+          <button type="button" onClick={() => setParams({}, { replace: true })} className="text-brand underline underline-offset-4">
+            Clear filters
+          </button>
         )}
-        {courses.data && courses.data.length === 0 && (
-          <p className="text-slate-500">No courses match these filters yet.</p>
+      </div>
+
+      <section className="mt-2">
+        {courses.isLoading && <p className="py-8 text-muted">Loading courses…</p>}
+        {courses.isError && (
+          <p role="alert" className="py-8 text-danger">
+            Could not load courses. Check that the API is running, then reload the page.
+          </p>
+        )}
+        {list && list.length === 0 && (
+          <div className="rounded-lg border border-dashed border-line-strong px-6 py-10">
+            <p className="font-display text-lg font-semibold text-ink">No courses match these filters yet.</p>
+            <p className="mt-1 max-w-md text-soft">
+              Try fewer filters. If your course is missing, you can add it while uploading a material.
+            </p>
+            <Link to="/upload" className={`${btnSecondary} mt-4`}>
+              Add a course and upload
+            </Link>
+          </div>
         )}
 
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {courses.data?.map((c) => (
+        <ul className="border-t border-line">
+          {list?.map((c) => (
             <li key={c.id}>
               <Link
                 to={`/courses/${c.id}`}
-                className="block rounded-lg border border-slate-200 bg-white p-4 hover:border-red-600"
+                className="flex items-stretch gap-4 border-b border-line px-2 py-4 hover:bg-brand-soft focus-visible:bg-brand-soft"
               >
-                <p className="text-sm font-semibold text-red-700">{c.code}</p>
-                <p className="mt-0.5 font-medium">{c.title}</p>
-                <p className="mt-2 text-xs text-slate-500">
-                  {c.region_code.replace('CA-', '')} · {c.level.replace('_', ' ')}
-                  {c.grade ? ` · Grade ${c.grade}` : ''}
-                  {c.institution ? ` · ${c.institution}` : ''}
-                </p>
+                <span aria-hidden="true" className="w-1.5 shrink-0 rounded-full" style={{ background: levelColor(c.level) }} />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-display text-lg font-semibold text-ink">{c.code}</span>
+                  <span className="block text-soft">{c.title}</span>
+                  <span className="mt-1 block text-sm text-muted sm:hidden">{meta(c, regions.data)}</span>
+                </span>
+                <span className="hidden max-w-xs shrink-0 self-center text-right text-sm text-muted sm:block">
+                  {meta(c, regions.data)}
+                </span>
               </Link>
             </li>
           ))}

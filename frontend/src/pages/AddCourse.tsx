@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api, type CourseDraft, type CreatedCourse } from '../api'
+import { btnPrimary } from '../ui'
 import { inputClass } from './Login'
 
 const LEVELS = [
@@ -67,7 +68,7 @@ export default function AddCourse({ initialCode = '', onCreated, onCancel }: Pro
 
   return (
     <div
-      className="mt-3 rounded-lg border border-slate-300 bg-white p-4"
+      className="mt-3 rounded-lg border border-line-strong bg-surface p-4"
       onKeyDown={(e) => {
         if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
           e.preventDefault()
@@ -76,7 +77,7 @@ export default function AddCourse({ initialCode = '', onCreated, onCancel }: Pro
       }}
     >
       <h3 className="font-medium">Add a missing course</h3>
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-muted">
         New courses appear for everyone once your upload to them is approved.
       </p>
 
@@ -211,7 +212,7 @@ export default function AddCourse({ initialCode = '', onCreated, onCancel }: Pro
         </div>
 
         {error && (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className="text-sm text-danger">
             {error}
           </p>
         )}
@@ -221,11 +222,11 @@ export default function AddCourse({ initialCode = '', onCreated, onCancel }: Pro
             type="button"
             onClick={() => void submit()}
             disabled={busy}
-            className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-60"
+            className={btnPrimary}
           >
             {busy ? 'Adding…' : 'Add this course'}
           </button>
-          <button type="button" onClick={onCancel} className="text-sm text-slate-600 hover:underline">
+          <button type="button" onClick={onCancel} className="text-sm text-soft hover:underline">
             Cancel
           </button>
         </div>

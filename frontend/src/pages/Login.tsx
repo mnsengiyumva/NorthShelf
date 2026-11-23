@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
+import { btnPrimary, fieldClass, h1Class } from '../ui'
+import { usePageTitle } from '../usePageTitle'
 
-export const inputClass =
-  'mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-red-600 focus:outline-none'
+export const inputClass = fieldClass
 
 export default function Login() {
+  usePageTitle('Log in')
   const { login } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
@@ -29,7 +31,7 @@ export default function Login() {
 
   return (
     <div className="mx-auto max-w-sm">
-      <h1 className="text-2xl font-semibold">Log in</h1>
+      <h1 className={h1Class}>Log in</h1>
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <label className="block text-sm font-medium">
           Email
@@ -54,21 +56,21 @@ export default function Login() {
           />
         </label>
         {error && (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className="text-sm text-danger">
             {error}
           </p>
         )}
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-60"
+          className={`${btnPrimary} w-full`}
         >
           {busy ? 'Logging in…' : 'Log in'}
         </button>
       </form>
-      <p className="mt-4 text-sm text-slate-600">
+      <p className="mt-4 text-sm text-soft">
         New to NorthShelf?{' '}
-        <Link to="/signup" className="text-red-700 underline">
+        <Link to="/signup" className="text-brand underline">
           Create an account
         </Link>
       </p>

@@ -4,11 +4,14 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { api, type Course } from '../api'
 import AddCourse from './AddCourse'
 import { useAuth } from '../auth'
+import { btnPrimary, h1Class } from '../ui'
+import { usePageTitle } from '../usePageTitle'
 import { inputClass } from './Login'
 
 const MAX_MB = 25
 
 export default function Upload() {
+  usePageTitle('Share a material')
   const { user, isLoading } = useAuth()
   const [params] = useSearchParams()
   const presetId = Number(params.get('course'))
@@ -49,15 +52,15 @@ export default function Upload() {
   if (!user) {
     return (
       <div className="mx-auto max-w-md">
-        <h1 className="text-2xl font-semibold">Share a material</h1>
-        <p className="mt-3 text-slate-600">
+        <h1 className={h1Class}>Share a material</h1>
+        <p className="mt-3 text-soft">
           You need an account to upload. It&apos;s free, and browsing and downloading never require one.
         </p>
         <div className="mt-4 flex gap-4 text-sm">
-          <Link to="/login" className="text-red-700 underline">
+          <Link to="/login" className="text-brand underline">
             Log in
           </Link>
-          <Link to="/signup" className="text-red-700 underline">
+          <Link to="/signup" className="text-brand underline">
             Create an account
           </Link>
         </div>
@@ -68,16 +71,16 @@ export default function Upload() {
   if (done) {
     return (
       <div className="mx-auto max-w-md">
-        <h1 className="text-2xl font-semibold">Thank you!</h1>
-        <p className="mt-3 text-slate-600">
+        <h1 className={h1Class}>Thank you!</h1>
+        <p className="mt-3 text-soft">
           Your upload is waiting for a quick review. Once it&apos;s approved, it will appear on the
           course page for everyone.
         </p>
         <div className="mt-4 flex gap-4 text-sm">
-          <Link to="/my-uploads" className="text-red-700 underline">
+          <Link to="/my-uploads" className="text-brand underline">
             See my uploads
           </Link>
-          <Link to="/" className="text-red-700 underline">
+          <Link to="/browse" className="text-brand underline">
             Back to browsing
           </Link>
         </div>
@@ -117,8 +120,8 @@ export default function Upload() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h1 className="text-2xl font-semibold">Share a material</h1>
-      <p className="mt-1 text-sm text-slate-600">
+      <h1 className={h1Class}>Share a material</h1>
+      <p className="mt-1 text-sm text-soft">
         PDF, PNG or JPEG, up to {MAX_MB} MB. Uploads are reviewed before they appear.
       </p>
 
@@ -126,13 +129,13 @@ export default function Upload() {
         <div>
           <p className="text-sm font-medium">Course</p>
           {course ? (
-            <div className="mt-1 flex items-center justify-between rounded-md border border-slate-300 bg-white px-3 py-2 text-sm">
+            <div className="mt-1 flex items-center justify-between rounded-md border border-line-strong bg-surface px-3 py-2 text-sm">
               <span>
                 <strong>{course.code}</strong> · {course.title}
               </span>
               <button
                 type="button"
-                className="text-red-700 hover:underline"
+                className="text-brand hover:underline"
                 onClick={() => {
                   setPicked(null)
                   setNewCourseNote(false)
@@ -153,7 +156,7 @@ export default function Upload() {
                 onChange={(e) => setCourseQuery(e.target.value)}
               />
               {results.data && results.data.length === 0 && (
-                <p className="mt-2 text-sm text-slate-500">No matching courses yet.</p>
+                <p className="mt-2 text-sm text-muted">No matching courses yet.</p>
               )}
               <ul className="mt-2 space-y-1">
                 {results.data?.map((c) => (
@@ -161,10 +164,10 @@ export default function Upload() {
                     <button
                       type="button"
                       onClick={() => setPicked(c)}
-                      className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-left text-sm hover:border-red-600"
+                      className="w-full rounded-md border border-line bg-surface px-3 py-2 text-left text-sm hover:border-brand"
                     >
                       <strong>{c.code}</strong> · {c.title}{' '}
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-muted">
                         ({c.region_code.replace('CA-', '')}, {c.level.replace('_', ' ')})
                       </span>
                     </button>
@@ -175,7 +178,7 @@ export default function Upload() {
                 <button
                   type="button"
                   onClick={() => setAdding(true)}
-                  className="mt-3 text-sm text-red-700 hover:underline"
+                  className="mt-3 text-sm text-brand hover:underline"
                 >
                   Can&apos;t find your course? Add it
                 </button>
@@ -194,7 +197,7 @@ export default function Upload() {
             </>
           )}
           {course && newCourseNote && (
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-muted">
               This is a new course. It will appear for everyone once your upload is approved.
             </p>
           )}
@@ -314,7 +317,7 @@ export default function Upload() {
         </label>
 
         {error && (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className="text-sm text-danger">
             {error}
           </p>
         )}
@@ -322,7 +325,7 @@ export default function Upload() {
         <button
           type="submit"
           disabled={busy || !confirmed}
-          className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-60"
+          className={btnPrimary}
         >
           {busy ? 'Uploading…' : 'Upload'}
         </button>
