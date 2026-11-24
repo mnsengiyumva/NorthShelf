@@ -13,7 +13,7 @@ function meta(c: Course, provinces: Parameters<typeof provinceName>[1]) {
 }
 
 export default function Browse() {
-  usePageTitle('Browse courses')
+  usePageTitle('Browse courses', 'Find free notes, past exams and study guides by province, level, subject and course code.')
   // Filters live in the URL, so a filtered view can be shared or bookmarked.
   const [params, setParams] = useSearchParams()
   const region = params.get('region') ?? ''

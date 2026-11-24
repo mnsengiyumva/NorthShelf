@@ -4,7 +4,7 @@ import { btnPrimary, h1Class, h2Class } from '../ui'
 import { usePageTitle } from '../usePageTitle'
 
 export default function Support() {
-  usePageTitle('Support NorthShelf')
+  usePageTitle('Support NorthShelf', 'NorthShelf is free and student-run. See how you can help keep it running.')
   return (
     <div className="max-w-2xl">
       <h1 className={h1Class}>Support NorthShelf</h1>

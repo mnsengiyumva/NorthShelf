@@ -21,7 +21,14 @@ export default function CoursePage() {
   })
   const regions = useQuery({ queryKey: ['regions'], queryFn: api.regions })
 
-  usePageTitle(course.data ? `${course.data.code} ${course.data.title}` : 'Course')
+  usePageTitle(
+    course.data ? `${course.data.code} ${course.data.title}` : 'Course',
+    course.data
+      ? `Free notes, past exams and study guides for ${course.data.code} ${course.data.title}${
+          course.data.institution ? ` at ${course.data.institution}` : ''
+        }, shared by students on NorthShelf.`
+      : undefined,
+  )
 
   if (course.isLoading) return <p className="text-muted">Loading…</p>
   if (course.isError || !course.data) {

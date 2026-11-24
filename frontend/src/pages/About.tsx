@@ -4,7 +4,7 @@ import { h1Class, h2Class } from '../ui'
 import { usePageTitle } from '../usePageTitle'
 
 export default function About() {
-  usePageTitle('About and policies')
+  usePageTitle('About and policies', 'What NorthShelf is, how uploads are reviewed, and the rules for sharing course materials.')
   return (
     <div className="max-w-2xl">
       <h1 className={h1Class}>About NorthShelf</h1>

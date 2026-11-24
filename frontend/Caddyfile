@@ -6,7 +6,7 @@ www.{$DOMAIN} {
 {$DOMAIN} {
 	encode zstd gzip
 
-	handle /api/* {
+	handle /api/* /sitemap.xml /robots.txt {
 		reverse_proxy backend:8000
 	}
 

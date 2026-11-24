@@ -61,3 +61,23 @@ def test_institutions_are_filterable(anon):
 def test_materials_list_starts_empty(anon):
     assert anon.get("/api/materials").json() == []
     assert anon.get("/api/materials/not-a-uuid").status_code == 422
+
+
+def test_robots_txt_hides_private_pages_and_points_to_sitemap(anon):
+    r = anon.get("/robots.txt")
+    assert r.status_code == 200 and r.headers["content-type"].startswith("text/plain")
+    assert "Disallow: /admin" in r.text and "Disallow: /api/" in r.text
+    assert "Sitemap: http://localhost:5173/sitemap.xml" in r.text
+
+
+def test_sitemap_lists_only_courses_with_published_materials(anon, make_user, upload, course_id):
+    xml = anon.get("/sitemap.xml")
+    assert xml.status_code == 200 and xml.headers["content-type"].startswith("application/xml")
+    assert "<loc>http://localhost:5173/browse</loc>" in xml.text
+    assert f"/courses/{course_id}<" not in xml.text      # no materials yet
+
+    student, mod = make_user("Student"), make_user("Mod", role="moderator")
+    material_id = upload(student).json()["id"]
+    assert f"/courses/{course_id}<" not in anon.get("/sitemap.xml").text   # still pending
+    assert mod.post(f"/api/admin/materials/{material_id}/approve").status_code == 200
+    assert f"<loc>http://localhost:5173/courses/{course_id}</loc>" in anon.get("/sitemap.xml").text

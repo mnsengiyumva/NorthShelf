@@ -43,7 +43,7 @@ const TOPICS: Topic[] = [
 ]
 
 export default function Contact() {
-  usePageTitle('Contact')
+  usePageTitle('Contact', 'Get in touch with the NorthShelf team: questions, takedown requests and feedback.')
   return (
     <div className="max-w-2xl">
       <h1 className={h1Class}>Contact</h1>
