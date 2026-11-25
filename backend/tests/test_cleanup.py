@@ -45,3 +45,30 @@ def test_expired_reset_tokens_are_removed(make_user, anon, db, outbox):
     db("UPDATE password_resets SET expires_at = now() - interval '3 days'")
     cleanup.main(["--min-age-minutes", "0", "--delete"])
     assert db("SELECT count(*) FROM password_resets")[0][0] == 0
+
+
+def test_backups_are_stored_listed_pruned_and_fetched(s3):
+    from datetime import datetime, timezone
+
+    from app import backup
+
+    data = b"x" * 500
+    keys = [
+        backup.upload(data, datetime(2026, 11, d, 3, 0, tzinfo=timezone.utc)) for d in (1, 2, 3)
+    ]
+    assert backup.list_backups() == sorted(keys, reverse=True)
+    assert backup.fetch(keys[0]) == data
+    assert backup.prune(keep=2) == [keys[0]]
+    assert backup.list_backups() == [keys[2], keys[1]]
+
+
+def test_backup_refuses_empty_dump_and_cleanup_leaves_backups_alone(s3, db):
+    import pytest
+
+    from app import backup, cleanup
+
+    with pytest.raises(ValueError):
+        backup.upload(b"")
+    key = backup.upload(b"y" * 500)
+    cleanup.main(["--delete"])
+    assert key in backup.list_backups()
