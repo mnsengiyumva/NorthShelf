@@ -20,14 +20,14 @@ def _base() -> str:
     return settings.public_url.rstrip("/")
 
 
-@router.get("/robots.txt", include_in_schema=False)
+@router.api_route("/robots.txt", methods=["GET", "HEAD"], include_in_schema=False)
 def robots() -> Response:
     lines = ["User-agent: *"] + [f"Disallow: {p}" for p in PRIVATE_PATHS]
     lines.append(f"Sitemap: {_base()}/sitemap.xml")
     return Response("\n".join(lines) + "\n", media_type="text/plain")
 
 
-@router.get("/sitemap.xml", include_in_schema=False)
+@router.api_route("/sitemap.xml", methods=["GET", "HEAD"], include_in_schema=False)
 def sitemap(conn: Conn) -> Response:
     # Only courses that are approved AND have at least one published material.
     rows = conn.execute(
