@@ -54,6 +54,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
+      args:
+        VITE_DONATE_URL: ${VITE_DONATE_URL:-}
+        VITE_CONTACT_EMAIL: ${VITE_CONTACT_EMAIL:-}
     restart: unless-stopped
     environment:
       DOMAIN: ${DOMAIN}

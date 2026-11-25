@@ -4,6 +4,10 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+# Public site settings are baked into the build (they are not secrets).
+ARG VITE_DONATE_URL=
+ARG VITE_CONTACT_EMAIL=
+ENV VITE_DONATE_URL=$VITE_DONATE_URL VITE_CONTACT_EMAIL=$VITE_CONTACT_EMAIL
 RUN npm run build
 
 FROM caddy:2-alpine
