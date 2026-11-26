@@ -74,6 +74,7 @@ def test_sitemap_lists_only_courses_with_published_materials(anon, make_user, up
     xml = anon.get("/sitemap.xml")
     assert xml.status_code == 200 and xml.headers["content-type"].startswith("application/xml")
     assert "<loc>http://localhost:5173/browse</loc>" in xml.text
+    assert "<loc>http://localhost:5173/learn/recursion</loc>" in xml.text
     assert f"/courses/{course_id}<" not in xml.text      # no materials yet
 
     student, mod = make_user("Student"), make_user("Mod", role="moderator")

@@ -11,7 +11,8 @@ from ..db import get_conn
 router = APIRouter(tags=["seo"])
 Conn = Annotated[Connection, Depends(get_conn)]
 
-STATIC_PATHS = ["/", "/browse", "/about", "/support", "/contact"]
+LEARN_MODULES = ["recursion", "sorting", "derivatives", "limits"]  # keep in sync with frontend/src/learn/modules.ts
+STATIC_PATHS = ["/", "/browse", "/learn", *[f"/learn/{m}" for m in LEARN_MODULES], "/about", "/support", "/contact"]
 PRIVATE_PATHS = ["/admin", "/my-uploads", "/upload", "/login", "/signup",
                  "/forgot-password", "/reset-password", "/api/"]
 

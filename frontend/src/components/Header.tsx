@@ -96,6 +96,9 @@ export default function Header() {
           <NavLink to="/browse" className={navLinkClass}>
             Browse
           </NavLink>
+          <NavLink to="/learn" className={navLinkClass}>
+            Learn
+          </NavLink>
           <NavLink to="/about" className={navLinkClass}>
             About
           </NavLink>
@@ -141,6 +144,7 @@ export default function Header() {
           <ul className="divide-y divide-line">
             {[
               ['/browse', 'Browse'],
+              ['/learn', 'Learn'],
               ['/upload', 'Upload'],
               ['/about', 'About and policies'],
               ['/support', 'Support NorthShelf'],

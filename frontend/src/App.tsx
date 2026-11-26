@@ -9,6 +9,8 @@ import Contact from './pages/Contact'
 import CoursePage from './pages/CoursePage'
 import ForgotPassword from './pages/ForgotPassword'
 import Home from './pages/Home'
+import Learn from './pages/Learn'
+import LearnModule from './learn/LearnModule'
 import Login from './pages/Login'
 import MyUploads from './pages/MyUploads'
 import NotFound from './pages/NotFound'
@@ -43,6 +45,8 @@ export default function App() {
           <Route element={<Shell />}>
             <Route path="/browse" element={<Browse />} />
             <Route path="/courses/:courseId" element={<CoursePage />} />
+            <Route path="/learn" element={<Learn />} />
+            <Route path="/learn/:slug" element={<LearnModule />} />
             <Route path="/upload" element={<Upload />} />
             <Route path="/my-uploads" element={<MyUploads />} />
             <Route path="/admin" element={<Admin />} />

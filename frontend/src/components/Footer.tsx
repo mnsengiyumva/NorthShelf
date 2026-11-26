@@ -26,6 +26,7 @@ export default function Footer() {
           <h2 className={colHeading}>Explore</h2>
           <ul className="mt-3 space-y-2">
             <li><Link to="/browse" className={linkClass}>Browse courses</Link></li>
+            <li><Link to="/learn" className={linkClass}>Learn by experimenting</Link></li>
             <li><Link to="/upload" className={linkClass}>Upload a material</Link></li>
             <li><Link to="/my-uploads" className={linkClass}>My uploads</Link></li>
           </ul>
