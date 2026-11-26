@@ -47,6 +47,50 @@ export const MODULES: ModuleMeta[] = [
     minutes: 20,
   },
   {
+    slug: 'graphs',
+    title: 'Graphs: BFS and DFS',
+    tagline: 'Two ways to explore a network, and why one finds shortest paths.',
+    summary:
+      'Step through breadth-first and depth-first search on trees, grids and graphs with loops. Watch the queue and the call stack, predict the next node to be visited, and compare the paths each search finds.',
+    subject: 'Computer science',
+    level: 'university',
+    courses: ['Data structures', 'Algorithms', 'Discrete math'],
+    minutes: 25,
+  },
+  {
+    slug: 'greedy',
+    title: 'Greedy algorithms',
+    tagline: 'Taking the best-looking option now: when that works and when it quietly fails.',
+    summary:
+      'Make change, schedule events and fill a knapsack by always grabbing what looks best. Find the inputs where greedy is exactly right, the ones where it is wrong, and what separates the two.',
+    subject: 'Computer science',
+    level: 'university',
+    courses: ['Algorithms', 'Design and analysis of algorithms', 'Discrete math'],
+    minutes: 25,
+  },
+  {
+    slug: 'dynamic-programming',
+    title: 'Dynamic programming',
+    tagline: 'Fill the table, then trace back the answer.',
+    summary:
+      'Watch a table fill cell by cell for coin change, knapsack and longest common subsequence. See which earlier cells each answer depends on, then trace the table back to recover the solution.',
+    subject: 'Computer science',
+    level: 'university',
+    courses: ['Algorithms', 'Design and analysis of algorithms'],
+    minutes: 25,
+  },
+  {
+    slug: 'np-hardness',
+    title: 'NP-hardness: easy to check, hard to find',
+    tagline: 'Why some problems blow up, and what “NP-hard” actually claims.',
+    summary:
+      'Check a proposed answer in a blink, then try to find one by searching. Watch subset sum and the travelling salesman problem explode with size, and compare a fast heuristic with the true optimum.',
+    subject: 'Computer science',
+    level: 'university',
+    courses: ['Algorithms', 'Theory of computation', 'Complexity'],
+    minutes: 25,
+  },
+  {
     slug: 'derivatives',
     title: 'The derivative as a slope',
     tagline: 'Shrink h and watch a secant become a tangent.',
@@ -67,6 +111,28 @@ export const MODULES: ModuleMeta[] = [
     level: 'university',
     courses: ['Calculus I', 'Real analysis (intro)'],
     minutes: 20,
+  },
+  {
+    slug: 'integrals',
+    title: 'Integrals as accumulated area',
+    tagline: 'Slice the area, add it up, and watch the error shrink.',
+    summary:
+      'Approximate area with left, right, midpoint and trapezoid slices. See why more slices help, which rules improve faster, and how the area-so-far curve connects integrals back to derivatives.',
+    subject: 'Mathematics',
+    level: 'university',
+    courses: ['Calculus I', 'Calculus II', 'Numerical methods'],
+    minutes: 25,
+  },
+  {
+    slug: 'matrices',
+    title: 'Matrices as transformations',
+    tagline: 'See what a matrix does to the plane, then multiply with understanding.',
+    summary:
+      'Edit a 2 × 2 matrix and watch the grid stretch, turn, shear or collapse. See determinants as area, eigenvectors as directions that stay put, and matrix multiplication as doing one transformation after another.',
+    subject: 'Mathematics',
+    level: 'university',
+    courses: ['Linear algebra', 'Calculus III', 'Computer graphics'],
+    minutes: 30,
   },
 ]
 

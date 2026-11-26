@@ -3,6 +3,9 @@ import { btnSecondary } from '../../ui'
 import ModuleShell, { Card, Section } from '../components/ModuleShell'
 import { ChoiceQuestion } from '../components/Questions'
 import Plot from '../components/Plot'
+import FunctionInput from '../components/FunctionInput'
+import { makeCustomCase } from '../engines/custom'
+import type { LimitCase } from '../engines/limits'
 import { approachTable, bestDelta, CASES, deltaWorks, KIND_LABEL, KIND_ORDER } from '../engines/limits'
 import { fmt } from '../engines/derivatives'
 import { moduleBySlug } from '../modules'
@@ -12,7 +15,8 @@ const meta = moduleBySlug('limits')!
 
 export default function LimitsModule() {
   const [caseId, setCaseId] = useState(CASES[1].id)
-  const c = CASES.find((k) => k.id === caseId)!
+  const [custom, setCustom] = useState<LimitCase | null>(null)
+  const c = (caseId === 'custom' && custom) || CASES.find((k) => k.id === caseId) || CASES[0]
   const [epsT, setEpsT] = useState(0.6)
   const [deltaT, setDeltaT] = useState(0.6)
   const [cand, setCand] = useState<number | null>(null)
@@ -45,6 +49,18 @@ export default function LimitsModule() {
               {k.label.replace('f(x) = ', '').split(' as ')[0]} at {c.id === k.id ? c.a : k.a}
             </button>
           ))}
+        </div>
+        <div className="mt-3">
+          <FunctionInput
+            showPoint
+            examples={['sin(x)/x', '(x^2-4)/(x-2)', 'abs(x)/x', '1/x^2', 'x*sin(1/x)', 'sin(1/x)']}
+            initial={{ text: '(x^2-4)/(x-2)', xmin: -4, xmax: 4, a: 2 }}
+            onApply={(v) => {
+              setCustom(makeCustomCase(v.text, v.xmin, v.xmax, v.a))
+              setCaseId('custom')
+              setCand(null)
+            }}
+          />
         </div>
         <p className="mt-3 font-medium text-ink">{c.label}</p>
       </Section>
@@ -170,7 +186,7 @@ export default function LimitsModule() {
 
       <Section title="Classify it">
         <ChoiceQuestion
-          key={c.id}
+          key={c.id === 'custom' ? c.label : c.id}
           number={1}
           prompt={<>Which statement describes <code>{c.label.split(' as ')[0].replace('f(x) = ', '')}</code> at x = {c.a}?</>}
           options={KIND_ORDER.map((k) => KIND_LABEL[k])}

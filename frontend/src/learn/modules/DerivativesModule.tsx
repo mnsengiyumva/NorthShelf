@@ -3,6 +3,9 @@ import { btnSecondary } from '../../ui'
 import ModuleShell, { Card, Section } from '../components/ModuleShell'
 import { ChoiceQuestion, NumberQuestion } from '../components/Questions'
 import Plot from '../components/Plot'
+import FunctionInput from '../components/FunctionInput'
+import { makeCustomFn } from '../engines/custom'
+import type { Fn } from '../engines/derivatives'
 import { convergence, FUNCTIONS, fmt, forwardSlope } from '../engines/derivatives'
 import { moduleBySlug } from '../modules'
 import { curvePath } from '../plotUtils'
@@ -12,7 +15,8 @@ const H_STEPS = [2, 1, 0.5, 0.25, 0.1, 0.05, 0.01, 0.001]
 
 export default function DerivativesModule() {
   const [fnId, setFnId] = useState(FUNCTIONS[0].id)
-  const fn = FUNCTIONS.find((f) => f.id === fnId)!
+  const [custom, setCustom] = useState<Fn | null>(null)
+  const fn = (fnId === 'custom' && custom) || FUNCTIONS.find((f) => f.id === fnId) || FUNCTIONS[0]
   const [x0, setX0] = useState(FUNCTIONS[0].start)
   const [hIdx, setHIdx] = useState(0)
   const [side, setSide] = useState<1 | -1>(1)
@@ -29,9 +33,10 @@ export default function DerivativesModule() {
   const x2 = x + h
 
   const pick = (id: string) => {
-    const f = FUNCTIONS.find((k) => k.id === id)!
+    const f = id === 'custom' ? custom : FUNCTIONS.find((k) => k.id === id)
     setFnId(id)
-    setX0(f.start)
+    if (f) setX0(f.start)
+    setHIdx(0)
     setAskIdx(0)
     setGuess('')
     setShown('idle')
@@ -42,7 +47,7 @@ export default function DerivativesModule() {
   const table = useMemo(() => convergence(fn, x, side), [fn, x, side])
   const leftS = convergence(fn, x, -1).at(-1)!.slope
   const rightS = convergence(fn, x, 1).at(-1)!.slope
-  const kink = exact === null && Math.abs(leftS - rightS) > 0.5 && fn.id === 'abs'
+  const kink = exact === null && Math.abs(leftS - rightS) > 0.5
 
   const checkGuess = () => {
     if (askAnswer === null) return
@@ -58,6 +63,18 @@ export default function DerivativesModule() {
               {f.label.replace('f(x) = ', '')}
             </button>
           ))}
+        </div>
+        <div className="mt-3">
+          <FunctionInput
+            examples={['x^2 * sin(x)', 'x^3 - 3x + 1', 'sqrt(x)', 'e^(-x^2)', '1/x', 'tan(x)']}
+            initial={{ text: 'x^2 * sin(x)', xmin: -4, xmax: 4, a: 0 }}
+            onApply={(v) => {
+              const f = makeCustomFn(v.text, v.xmin, v.xmax)
+              setCustom(f)
+              pick('custom')
+              setX0(f.start)
+            }}
+          />
         </div>
         <p className="mt-3 text-soft">
           <strong className="text-ink">{fn.label}</strong> · derivative: <strong className="text-ink">{fn.dLabel}</strong>
